@@ -1,7 +1,7 @@
 from flask import Flask, render_template, request, redirect, make_response
 
 app = Flask(__name__, template_folder='templates')
-app.secret_key = 'your_secret_key'  # Замените 'your_secret_key' на свой секретный ключ
+app.secret_key = 'Arsen'
 
 @app.route('/')
 def input_form():
