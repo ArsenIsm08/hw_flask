@@ -1,37 +1,38 @@
-from flask import Flask, render_template
+from flask import Flask, render_template, request, redirect, make_response
 
 app = Flask(__name__, template_folder='templates')
-
-# Статичные данные для категорий и товаров
-categories_data = {
-    'clothing': {'name': 'Одежда', 'description': 'Широкий выбор стильной одежды.'},
-    'shoes': {'name': 'Обувь', 'description': 'Качественная обувь для всех сезонов.'},
-}
-
-products_data = {
-    'item1': {'name': 'Товар 1', 'description': 'Описание товара 1.', 'price': 19.99},
-    'item2': {'name': 'Товар 2', 'description': 'Описание товара 2.', 'price': 29.99},
-}
+app.secret_key = 'your_secret_key'  # Замените 'your_secret_key' на свой секретный ключ
 
 @app.route('/')
-def home():
-    return render_template('base.html')
+def input_form():
+    return render_template('input_form.html')
 
-@app.route('/category/<category>')
-def category(category):
-    category_data = categories_data.get(category)
-    if not category_data:
-        return render_template('404.html'), 404
+@app.route('/process_form', methods=['POST'])
+def process_form():
+    user_name = request.form.get('user_name')
+    user_email = request.form.get('user_email')
 
-    return render_template('category.html', category_data=category_data, products_data=products_data)
+    response = make_response(redirect('/welcome'))
+    response.set_cookie('user_name', user_name)
+    response.set_cookie('user_email', user_email)
 
-@app.route('/product/<product_name>')
-def product(product_name):
-    product_data = products_data.get(product_name)
-    if not product_data:
-        return render_template('404.html'), 404
+    return response
 
-    return render_template('product.html', product_data=product_data)
+@app.route('/welcome')
+def welcome():
+    user_name = request.cookies.get('user_name')
+    if user_name:
+        return render_template('welcome.html', user_name=user_name)
+    else:
+        return redirect('/')
+
+@app.route('/logout')
+def logout():
+    response = make_response(redirect('/'))
+    response.delete_cookie('user_name')
+    response.delete_cookie('user_email')
+
+    return response
 
 if __name__ == '__main__':
     app.run(debug=True)
